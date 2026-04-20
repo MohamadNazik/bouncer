@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/lsflk/bouncer/pkg/bouncer"
+	"github.com/lsflk/bouncer"
 )
 
 type Handler struct {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	internalhttp "github.com/lsflk/bouncer/internal/http"
-	"github.com/lsflk/bouncer/pkg/bouncer"
+	"github.com/lsflk/bouncer"
 )
 
 // MuxAdapter holds the internal HTTP handler configurations securely.
