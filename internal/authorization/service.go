@@ -1,6 +1,12 @@
 package authorization
 
-import "context"
+import (
+	"context"
+
+	"github.com/lsflk/bouncer/internal/permission"
+	"github.com/lsflk/bouncer/internal/resource"
+	"github.com/lsflk/bouncer/internal/subject"
+)
 
 // Expected store interface internally (matches pkg/bouncer.Store)
 type Store interface {
@@ -20,16 +26,28 @@ func NewService(store Store) *Service {
 }
 
 // HasPermission checks if the subject has the requested permission on the resource.
-func (s *Service) HasPermission(ctx context.Context, subjectID string, resourceID string, permission string) (bool, error) {
-	return s.store.HasPermission(ctx, subjectID, resourceID, permission)
+func (s *Service) HasPermission(ctx context.Context, subjectStr string, resourceStr string, permissionStr string) (bool, error) {
+	subID := subject.ID(subjectStr)
+	resID := resource.ID(resourceStr)
+	permName := permission.Name(permissionStr)
+
+	return s.store.HasPermission(ctx, string(subID), string(resID), string(permName))
 }
 
 // GrantPermission grants the requested permission on the resource to the subject.
-func (s *Service) GrantPermission(ctx context.Context, subjectID string, resourceID string, permission string) error {
-	return s.store.GrantPermission(ctx, subjectID, resourceID, permission)
+func (s *Service) GrantPermission(ctx context.Context, subjectStr string, resourceStr string, permissionStr string) error {
+	subID := subject.ID(subjectStr)
+	resID := resource.ID(resourceStr)
+	permName := permission.Name(permissionStr)
+
+	return s.store.GrantPermission(ctx, string(subID), string(resID), string(permName))
 }
 
 // RevokePermission revokes the requested permission on the resource from the subject.
-func (s *Service) RevokePermission(ctx context.Context, subjectID string, resourceID string, permission string) error {
-	return s.store.RevokePermission(ctx, subjectID, resourceID, permission)
+func (s *Service) RevokePermission(ctx context.Context, subjectStr string, resourceStr string, permissionStr string) error {
+	subID := subject.ID(subjectStr)
+	resID := resource.ID(resourceStr)
+	permName := permission.Name(permissionStr)
+
+	return s.store.RevokePermission(ctx, string(subID), string(resID), string(permName))
 }
