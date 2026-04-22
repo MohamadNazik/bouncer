@@ -24,5 +24,7 @@ func (a *MuxAdapter) RegisterRoutes(mux *http.ServeMux) error {
 	mux.HandleFunc("POST /v1/permissions/check", a.handler.HandleCheck)
 	mux.HandleFunc("POST /v1/permissions/grant", a.handler.HandleGrant)
 	mux.HandleFunc("POST /v1/permissions/revoke", a.handler.HandleRevoke)
+	mux.HandleFunc("POST /v1/resources", a.handler.HandleCreateResource)
+	mux.HandleFunc("DELETE /v1/resources", a.handler.HandleDeleteResource)
 	return nil
 }

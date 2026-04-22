@@ -53,3 +53,23 @@ func (s *Service) RevokePermission(ctx context.Context, subjectStr string, resou
 
 	return s.store.RevokePermission(ctx, string(subID), string(resID), string(permName))
 }
+
+// CreateResource registers a new resource in the system.
+func (s *Service) CreateResource(ctx context.Context, resourceID string, name string, parentID *string) error {
+	resID := resource.ID(resourceID)
+
+	var parent *string
+	if parentID != nil {
+		pID := resource.ID(*parentID)
+		pStr := string(pID)
+		parent = &pStr
+	}
+
+	return s.store.CreateResource(ctx, string(resID), name, parent)
+}
+
+// DeleteResource removes a resource and its associated permissions.
+func (s *Service) DeleteResource(ctx context.Context, resourceID string) error {
+	resID := resource.ID(resourceID)
+	return s.store.DeleteResource(ctx, string(resID))
+}
