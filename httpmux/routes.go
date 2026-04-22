@@ -20,9 +20,24 @@ func New(authorizer bouncer.Authorizer) *MuxAdapter {
 }
 
 // RegisterRoutes safely attaches Bouncer authorization endpoints to a multiplexer.
-func (a *MuxAdapter) RegisterRoutes(mux *http.ServeMux) error {
-	mux.HandleFunc("POST /v1/permissions/check", a.handler.HandleCheck)
-	mux.HandleFunc("POST /v1/permissions/grant", a.handler.HandleGrant)
-	mux.HandleFunc("POST /v1/permissions/revoke", a.handler.HandleRevoke)
+// It accepts a variadic list of middlewares that are applied to each route.
+func (a *MuxAdapter) RegisterRoutes(mux *http.ServeMux, mw ...func(http.Handler) http.Handler) error {
+	checkHandler := a.applyMiddlewares(http.HandlerFunc(a.handler.HandleCheck), mw)
+	grantHandler := a.applyMiddlewares(http.HandlerFunc(a.handler.HandleGrant), mw)
+	revokeHandler := a.applyMiddlewares(http.HandlerFunc(a.handler.HandleRevoke), mw)
+
+	mux.Handle("POST /v1/permissions/check", checkHandler)
+	mux.Handle("POST /v1/permissions/grant", grantHandler)
+	mux.Handle("POST /v1/permissions/revoke", revokeHandler)
+
 	return nil
+}
+
+// applyMiddlewares wraps the handler with the given middlewares.
+// Middlewares are applied in the order they are provided (outermost to innermost).
+func (a *MuxAdapter) applyMiddlewares(h http.Handler, mw []func(http.Handler) http.Handler) http.Handler {
+	for i := len(mw) - 1; i >= 0; i-- {
+		h = mw[i](h)
+	}
+	return h
 }
