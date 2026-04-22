@@ -2,6 +2,7 @@ package authorization
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/lsflk/bouncer/internal/permission"
 	"github.com/lsflk/bouncer/internal/resource"
@@ -19,12 +20,16 @@ type Store interface {
 
 // Service provides authorization capabilities by interacting with the storage layer.
 type Service struct {
-	store Store
+	store  Store
+	logger *slog.Logger
 }
 
 // NewService creates a new Service instance backed by the provided store.
-func NewService(store Store) *Service {
-	return &Service{store: store}
+func NewService(store Store, logger *slog.Logger) *Service {
+	return &Service{
+		store:  store,
+		logger: logger,
+	}
 }
 
 // HasPermission checks if the subject has the requested permission on the resource.
@@ -33,7 +38,11 @@ func (s *Service) HasPermission(ctx context.Context, subjectStr string, resource
 	resID := resource.ID(resourceStr)
 	permName := permission.Name(permissionStr)
 
-	return s.store.HasPermission(ctx, string(subID), string(resID), string(permName))
+	allowed, err := s.store.HasPermission(ctx, string(subID), string(resID), string(permName))
+	if err != nil && s.logger != nil {
+		s.logger.Error("failed to check permission", "error", err, "subject", subID, "resource", resID, "permission", permName)
+	}
+	return allowed, err
 }
 
 // GrantPermission grants the requested permission on the resource to the subject.
@@ -42,7 +51,11 @@ func (s *Service) GrantPermission(ctx context.Context, subjectStr string, resour
 	resID := resource.ID(resourceStr)
 	permName := permission.Name(permissionStr)
 
-	return s.store.GrantPermission(ctx, string(subID), string(resID), string(permName))
+	err := s.store.GrantPermission(ctx, string(subID), string(resID), string(permName))
+	if err != nil && s.logger != nil {
+		s.logger.Error("failed to grant permission", "error", err, "subject", subID, "resource", resID, "permission", permName)
+	}
+	return err
 }
 
 // RevokePermission revokes the requested permission on the resource from the subject.
@@ -51,5 +64,9 @@ func (s *Service) RevokePermission(ctx context.Context, subjectStr string, resou
 	resID := resource.ID(resourceStr)
 	permName := permission.Name(permissionStr)
 
-	return s.store.RevokePermission(ctx, string(subID), string(resID), string(permName))
+	err := s.store.RevokePermission(ctx, string(subID), string(resID), string(permName))
+	if err != nil && s.logger != nil {
+		s.logger.Error("failed to revoke permission", "error", err, "subject", subID, "resource", resID, "permission", permName)
+	}
+	return err
 }

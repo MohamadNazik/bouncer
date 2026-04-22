@@ -1,6 +1,9 @@
 package bouncer
 
-import "context"
+import (
+	"context"
+	"log/slog"
+)
 
 // Authorizer represents the main entrypoint for checking and managing permissions.
 type Authorizer interface {
@@ -16,4 +19,19 @@ type Store interface {
 	RevokePermission(ctx context.Context, subjectID string, resourceID string, permission string) error
 	CreateResource(ctx context.Context, resourceID string, name string, parentID *string) error
 	DeleteResource(ctx context.Context, resourceID string) error
+}
+
+// Option defines a functional configuration for the Authorizer.
+type Option func(*Config)
+
+// Config holds internal configuration for the Authorizer.
+type Config struct {
+	Logger *slog.Logger
+}
+
+// WithLogger provides a custom logger for the Authorizer.
+func WithLogger(logger *slog.Logger) Option {
+	return func(c *Config) {
+		c.Logger = logger
+	}
 }
