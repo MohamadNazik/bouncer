@@ -39,3 +39,14 @@ func (s *PostgresStore) RevokePermission(ctx context.Context, subjectID string, 
 	_, err := s.db.ExecContext(ctx, postgres.QueryRevokePermission, subjectID, resourceID, permission)
 	return err
 }
+
+func (s *PostgresStore) CreateResource(ctx context.Context, resourceID string, name string, parentID *string) error {
+	_, err := s.db.ExecContext(ctx, postgres.QueryCreateResource, resourceID, name, parentID)
+	return err
+}
+
+// DeleteResource removes a resource by ID.
+func (s *PostgresStore) DeleteResource(ctx context.Context, resourceID string) error {
+	_, err := s.db.ExecContext(ctx, postgres.QueryDeleteResource, resourceID)
+	return err
+}
